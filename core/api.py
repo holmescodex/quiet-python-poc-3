@@ -217,13 +217,16 @@ def execute_api(protocol_name, method, path, data=None, params=None):
                     "eventsProcessed": 0  # Would need to track this
                 }
             }
-            
+
         except Exception as e:
             return {
                 "status": 500,
                 "body": {"error": f"Tick execution failed: {str(e)}"}
             }
         finally:
+            # Ensure database connection is closed
+            if 'db' in locals():
+                db.close()
             # Restore original handler path
             if old_handler_path:
                 os.environ["HANDLER_PATH"] = old_handler_path
@@ -283,13 +286,16 @@ def execute_api(protocol_name, method, path, data=None, params=None):
         # Don't add db to response - we're using persistent database now
         
         return response
-        
+
     except Exception as e:
         return {
             "status": 500,
             "body": {"error": f"Command execution failed: {str(e)}"}
         }
     finally:
+        # Ensure database connection is closed
+        if 'db' in locals():
+            db.close()
         # Restore original handler path
         if old_handler_path:
             os.environ["HANDLER_PATH"] = old_handler_path
